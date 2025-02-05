@@ -17,7 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+
+BASE_URL = 'api/v1'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1', include('api.urls')),  # Include the API URLs in the main URL configuration
+    path(BASE_URL, include('user_service.urls')),  # Include the API URLs in the main URL configuration
 ]
