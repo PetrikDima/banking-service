@@ -1,17 +1,17 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
-from user_service.models import CustomUser
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    country = serializers.CharField(source="country.code")
+    country = serializers.CharField(source="country.code", required=False)
     phone_number = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
-        model = CustomUser
+        model = get_user_model()
         fields = [
             "id",
             "username",
+            "password",
             "email",
             "first_name",
             "last_name",
@@ -25,8 +25,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-
         representation['first_name'] = representation['first_name'].title()
         representation['last_name'] = representation['last_name'].title()
-
         return representation
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().create(validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
