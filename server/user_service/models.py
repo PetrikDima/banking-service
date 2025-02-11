@@ -8,8 +8,6 @@ from utils import constants
 
 
 class CustomUser(AbstractUser):
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
     currency = models.CharField(max_length=3, default=constants.DEFAULT_CURRENCY)
     country = CountryField(default=constants.DEFAULT_REGION, blank=True)
     phone_number = PhoneNumberField(region=constants.DEFAULT_REGION, blank=True, null=True)
