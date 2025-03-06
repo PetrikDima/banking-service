@@ -1,6 +1,6 @@
 from django.contrib.auth.views import UserModel
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 
 from back_end.user_service.users.serializers import CustomUserSerializer
 
