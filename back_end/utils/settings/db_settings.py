@@ -5,10 +5,9 @@ from urllib.parse import urlparse
 
 from back_end.utils.settings import BASE_DIR
 
-# USE_SQLITE = os.getenv("USE_SQLITE", "False") == "True"
-USE_SQLITE = True
+DEBUG_DB = (bool(int(os.getenv("DEBUG_DB", 0))))
 
-if USE_SQLITE:
+if DEBUG_DB:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
