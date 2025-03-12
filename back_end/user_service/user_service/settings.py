@@ -12,13 +12,13 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 
 try:
-    from back_end.utils.settings.auth_settings import *
-    from back_end.utils.settings.cors_settings import *
-    from back_end.utils.settings.db_settings import *
+    from ....utils.settings.auth_settings import *
+    from ....utils.settings.cors_settings import *
+    from ....utils.settings.db_settings import *
 except ImportError:
     raise ImportError("Can't find the settings file")
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.paresnt
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     # Our SERVICES
     'users',
+    'back_end.user_service.subscriptions',
 
     # Third-Party LIBS
     'rest_framework',
