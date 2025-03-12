@@ -4,7 +4,7 @@ from django_countries.fields import CountryField
 from djmoney.models.fields import MoneyField
 from phonenumber_field.modelfields import PhoneNumberField
 
-from back_end.utils import constants
+from .utils import constants
 
 
 class CustomUser(AbstractUser):
