@@ -5,4 +5,6 @@ from . import views
 
 router = DefaultRouter()
 router.register('subscriptions', views.SubscribeView)
-urlpatterns = [path('', include(router.urls))]
+urlpatterns = [
+    path('', include(router.urls))
+]
