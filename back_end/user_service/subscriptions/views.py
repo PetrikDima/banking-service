@@ -1,10 +1,8 @@
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from back_end.user_service.subscriptions.models import Subscription
-from back_end.user_service.subscriptions.serializers import SubscriptionSerializer
+from .models import Subscription
+from .serializers import SubscriptionSerializer
 
 
 class SubscribeView(ModelViewSet):
@@ -13,4 +11,4 @@ class SubscribeView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user, currency=self.request.user.currency)

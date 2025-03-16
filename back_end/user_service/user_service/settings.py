@@ -43,7 +43,7 @@ INSTALLED_APPS = [
 
     # Our SERVICES
     'users',
-    'back_end.user_service.subscriptions',
+    'subscriptions',
 
     # Third-Party LIBS
     'rest_framework',
