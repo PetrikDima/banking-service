@@ -43,13 +43,15 @@ INSTALLED_APPS = [
 
     # Our SERVICES
     'users',
+    'subscriptions',
 
     # Third-Party LIBS
     'rest_framework',
     'rest_framework_simplejwt',
     'phonenumber_field',
     'corsheaders',
-    'drf_yasg'
+    'drf_yasg',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
