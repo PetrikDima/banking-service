@@ -10,25 +10,37 @@
 
     <div class="input-form">
       <div class="input-group">
-        <input v-model="username" type="email" placeholder="Email" required />
+        <input v-model="username" type="email" placeholder="Email" required/>
       </div>
       <div class="input-group password-wrapper">
-        <input :type="showPassword ? 'text' : 'password'" v-model="password" placeholder="Password" required />
-        <img v-if="showPassword" src="@/assets/icons/eye-off.png" alt="Eye Icon" class="toggle-visibility" @click="togglePassword" />
-        <span v-else class="toggle-visibility" @click="togglePassword">👁️</span>
+        <input :type="showPassword ? 'text' : 'password'" v-model="password" placeholder="Password" required/>
+        <img
+            v-if="showPassword"
+            src="@/assets/icons/eye-off.png"
+            alt="Hide Password"
+            class="toggle-visibility"
+            @click="togglePassword"
+        />
+        <img
+            v-else
+            src="@/assets/icons/eye-on.png"
+            alt="Show Password"
+            class="toggle-visibility"
+            @click="togglePassword"
+        />
       </div>
     </div>
 
     <button class="login-button" @click="loginUser">Log In</button>
 
-    <div class="bottom-link" @click="signIn">Sign In</div>
+    <div class="bottom-link" @click="signIn">Sign Up</div>
 
     <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script>
-import { auth } from '../scripts/auth';
+import {auth} from '../scripts/auth';
 
 export default {
   data() {
@@ -66,6 +78,7 @@ export default {
 body {
   font-family: 'Poppins', sans-serif;
 }
+
 .login-wrapper {
   width: 566px;
   height: 519px;
