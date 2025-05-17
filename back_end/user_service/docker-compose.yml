@@ -1,0 +1,14 @@
+services:
+  django:
+    build:
+      context: ../
+      dockerfile: user_service/Dockerfile
+    container_name: user_service
+    command: >
+      sh -c "python user_service/manage.py migrate &&
+             python user_service/manage.py makemigrations &&
+             python user_service/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ../:/app
+    ports:
+      - "8001:8000"

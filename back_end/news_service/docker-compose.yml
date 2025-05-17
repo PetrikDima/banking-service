@@ -1,0 +1,23 @@
+services:
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  django:
+    build:
+      context: ../
+      dockerfile: news_service/Dockerfile
+    container_name: news_service
+    command: >
+      sh -c "python news_service/manage.py migrate &&
+             python user_service/manage.py makemigrations && 
+             python news_service/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ../:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
