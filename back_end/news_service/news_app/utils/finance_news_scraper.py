@@ -80,6 +80,9 @@ class FinanceNewsScraper:
         """Allow indexing into the news list."""
         return self._finance_news[index]
 
+    def as_list(self) -> List[Dict[str, str]]:
+        return self._finance_news
+
     def clear(self) -> None:
         """Reset stored news and seen links."""
         self._finance_news.clear()

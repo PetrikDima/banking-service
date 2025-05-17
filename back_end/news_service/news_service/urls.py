@@ -15,8 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+from drf_yasg import openapi, views
+from rest_framework import permissions
+
+schema_view = views.get_schema_view(
+   openapi.Info(
+      title="News Service API",
+      default_version="v1",
+      description="API documentation for News service",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="petrikdima16@gmail.com"),
+      license=openapi.License(name="MIT License"),
+   ),
+   public=True,
+   permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/v1/', include("news_app.urls")),
+    path('api/v1/news_service/swagger/', schema_view.with_ui('swagger'), name='swagger')
 ]
