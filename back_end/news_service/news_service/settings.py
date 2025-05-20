@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-f3ehi2gqaiojfm^bmj!fqn06ib+3ep8=p!uxx=7df&juw^62i@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0']
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1']
 
 
 # Application definition
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # Third-Party LIBS
     'drf_yasg',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'news_service.urls'
@@ -76,6 +78,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'news_service.wsgi.application'
 
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -139,7 +142,7 @@ REST_FRAMEWORK = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION":  "redis://redis:6379/1",
+        "LOCATION": "redis://redis:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
