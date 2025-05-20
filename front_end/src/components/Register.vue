@@ -10,10 +10,10 @@
 
     <div class="input-form">
       <div class="input-group">
-        <input v-model="name" type="text" placeholder="Name" required/>
+        <input v-model="username" type="text" placeholder="Name" required/>
       </div>
       <div class="input-group">
-        <input v-model="username" type="email" placeholder="Email" required/>
+        <input v-model="email" type="email" placeholder="Email" required/>
       </div>
       <div class="input-group password-wrapper">
         <input :type="showPassword ? 'text' : 'password'" v-model="password" placeholder="Password" required/>
@@ -64,8 +64,8 @@ import {auth} from '../scripts/auth';
 export default {
   data() {
     return {
-      name: '',
       username: '',
+      email: '',
       password: '',
       confirmPassword: '',
       showPassword: false,
@@ -81,7 +81,7 @@ export default {
       }
 
       try {
-        const data = await auth.register(this.name, this.username, this.password);
+        const data = await auth.register(this.username, this.email, this.password);
         localStorage.setItem('user-token', data.access);
         this.$router.push('/dashboard');
       } catch (err) {

@@ -7,6 +7,7 @@ UserModel = get_user_model()
 
 
 class MultiFieldAuthBackend(ModelBackend):
+
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
             user = UserModel.objects.get(
