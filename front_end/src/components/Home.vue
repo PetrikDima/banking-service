@@ -53,16 +53,7 @@
               :key="news.id"
               :class="['news-card', idx === 1 ? 'news-card--main' : 'news-card--blurred']"
           >
-            <h3>
-              <a
-                  :href="news.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="news-link"
-              >
-                {{ news.title }}
-              </a>
-            </h3>
+            <h3>{{ news.title }}</h3>
             <p>{{ news.description }}</p>
 
             <!-- Кнопки тільки на головній карточці -->
