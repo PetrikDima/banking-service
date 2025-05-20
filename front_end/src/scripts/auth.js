@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000/api/v1';
+const API_URL = 'http://0.0.0.0:8001/api/v1';
 
 export const auth = {
 
-    async register(username, password) {
+    async register(username, email, password) {
         try {
             console.info('Credentials', username, password);
-            const response = await axios.post(`${API_URL}/users/`, { username, password });
+            const response = await axios.post(`${API_URL}/users/`, { username, email, password });
             console.info('Response', response.data);
             return response.data;
         } catch (error) {

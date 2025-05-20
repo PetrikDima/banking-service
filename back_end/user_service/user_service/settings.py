@@ -166,6 +166,7 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
+AUTHENTICATION_BACKENDS = ['users.authentication.MultiFieldAuthBackend']
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
