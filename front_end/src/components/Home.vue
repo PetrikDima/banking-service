@@ -118,7 +118,7 @@ function nextNews() {
 
 onMounted(async () => {
   try {
-    const response = await axios.get("http://0.0.0.0:8010/api/v1/news/");
+    const response = await axios.get("http://0.0.0.0:8000/api/v1/news/");
     newsItems.value = response.data;
   } catch (error) {
     console.error('Помилка при завантаженні новин:', error);
