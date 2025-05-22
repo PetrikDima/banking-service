@@ -22,6 +22,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "monthly_income",
             "financial_goal",
             "savings",
+            "monobank_token",
         ]
 
     def to_representation(self, instance):
