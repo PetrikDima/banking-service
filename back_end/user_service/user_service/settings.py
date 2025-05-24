@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # Our SERVICES
     'users',
     'subscriptions',
+    'banking',
 
     # Third-Party LIBS
     'rest_framework',
