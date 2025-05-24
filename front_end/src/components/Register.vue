@@ -83,7 +83,7 @@ export default {
       try {
         const data = await auth.register(this.username, this.email, this.password);
         localStorage.setItem('user-token', data.access);
-        this.$router.push('/dashboard');
+        this.$router.push('/login');
       } catch (err) {
         this.errorMessage = 'Registration failed. Please try again.';
       }

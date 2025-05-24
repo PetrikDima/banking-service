@@ -40,12 +40,12 @@
         <div class="card-details">
           <div class="name-number">
             <h6>Card Number</h6>
-            <h5 class="number">8050 5040 2030 3020</h5>
-            <h5 class="name">Prem Kumar Shahi</h5>
+            <h5 class="number">{{ cardNumber }}</h5>
+            <h5 class="name">{{ cardHolder }}</h5>
           </div>
           <div class="valid-date">
-            <h6>Valid Thru</h6>
-            <h5>05/28</h5>
+            <h6>IBAN</h6>
+            <h5>{{ cardIban }}</h5>
           </div>
         </div>
       </div>
@@ -88,7 +88,7 @@
         </div>
 
         <div class="costs-amount">
-          {{ activeTab === 'costs' ? '-9510.56$' : '+12450.00$' }}
+          {{ activeTab === 'costs' ? `${cardCosts}` + '₴' : `+${cardIncome}` + '₴' }}
         </div>
 
         <div class="arrow left" @click="switchTab">&#60;</div>
@@ -112,12 +112,14 @@
       <div class="categories-box">
         <h3>Categories</h3>
         <div class="categories-list">
-          <div class="categoria"><p>market</p><p>563$</p></div>
-          <div>💸 -2000$</div>
-          <div>🧾 -320$</div>
-          <div>📞 -150$</div>
-          <div>🍴 -563$</div>
-          <div>💊 -563$</div>
+          <div
+              v-for="[name, value] in Object.entries(categoriesMap)"
+              :key="name"
+              class="categoria"
+          >
+            <p>{{ name }}</p>
+            <p>{{ Math.abs(value / 100).toFixed(2) }}₴</p>
+          </div>
         </div>
       </div>
 
@@ -125,12 +127,12 @@
       <div class="tags-box">
         <h3>Tags</h3>
         <div class="tags-list">
-          <div>#products</div>
-          <div>#cashwithdrawal</div>
-          <div>#pharmacy</div>
-          <div>#medical</div>
-          <div>#food</div>
-          <div>#transport</div>
+          <div
+              v-for="[tag, value] in Object.entries(tagsMap)"
+              :key="tag"
+          >
+            #{{ tag }} — {{ Math.abs(value / 100).toFixed(2) }}₴
+          </div>
         </div>
       </div>
     </div>
@@ -147,12 +149,20 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import iconCosts from '../assets/icons/costs.svg';
 import iconIncome from '../assets/icons/income.svg';
+import axios from "axios";
 
 const showAccountMenu = ref(false);
 const activeTab = ref('costs');
+const cardNumber = ref('');
+const cardHolder = ref('');
+const cardIban = ref('');
+const cardCosts = ref('');
+const cardIncome = ref('');
+const categoriesMap = ref({});
+const tagsMap = ref({});
 
 function toggleAccountMenu() {
   showAccountMenu.value = !showAccountMenu.value;
@@ -161,6 +171,112 @@ function toggleAccountMenu() {
 function switchTab() {
   activeTab.value = activeTab.value === 'costs' ? 'income' : 'costs';
 }
+
+onMounted(async () => {
+  try {
+    const token = localStorage.getItem("user-token");
+
+    const response = await axios.get(
+        "http://0.0.0.0:8001/api/v1/monobank/token/",
+        {
+          headers: {
+            Authorization: `JWT_TOKEN ${token}`,
+          },
+        }
+    );
+    console.log("Token:", response.data);
+
+    const response2 = await axios.get(
+        "http://0.0.0.0:8001/api/v1/monobank/personal-info/",
+        {
+          headers: {
+            Authorization: `JWT_TOKEN ${token}`,
+          },
+        }
+    );
+    console.log("Personal Info:", response2.data);
+
+    const accounts = response2.data.accounts;
+    const accountWithMoney = accounts.find(
+        acc => typeof acc.balance === 'number' && acc.balance > 0
+    );
+
+    if (accountWithMoney) {
+      cardNumber.value = accountWithMoney.maskedPan?.[0] || '**** **** **** ****';
+      cardHolder.value = response2.data.name || 'Unknown';
+      cardIban.value = accountWithMoney.iban || '**** **** **** ****';
+
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      const formatDate = (date) => {
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        return `${dd}-${mm}-${yyyy}`;
+      };
+
+      const dateFrom = formatDate(firstDay);
+      const dateTo = formatDate(tomorrow);
+      const accountId = accountWithMoney.id;
+
+      const statementResponse = await axios.get(
+          `http://0.0.0.0:8001/api/v1/monobank/statement/${accountId}/${dateFrom}/${dateTo}/`,
+          {
+            headers: {
+              Authorization: `JWT_TOKEN ${token}`,
+            },
+          }
+      );
+      console.log("Statement:", statementResponse.data);
+      let totalPositive = 0;
+      let totalNegative = 0;
+
+      statementResponse.data.forEach(transaction => {
+        if (!transaction.hold) {
+          const amount = transaction.operationAmount;
+          if (amount > 0) {
+            totalPositive += amount;
+          } else {
+            totalNegative += amount;
+          }
+
+          const category = transaction.category || 'Uncategorized';
+          const tags = transaction.tags || [];
+
+          if (amount < 0) {
+            // Категорії
+            if (!categoriesMap.value[category]) {
+              categoriesMap.value[category] = 0;
+            }
+            categoriesMap.value[category] += amount;
+
+            // Теги
+            tags.forEach(tag => {
+              if (!tagsMap.value[tag]) {
+                tagsMap.value[tag] = 0;
+              }
+              tagsMap.value[tag] += amount;
+            });
+          }
+        }
+      });
+
+
+      console.log("Надходження:", (totalPositive / 100).toFixed(2), "грн");
+      console.log("Витрати:", (totalNegative / 100).toFixed(2), "грн");
+      cardCosts.value = (totalNegative / 100).toFixed(2)
+      cardIncome.value = (totalPositive / 100).toFixed(2)
+    }
+
+  } catch (error) {
+    console.error('Помилка при завантаженні даних з monobank:', error);
+  }
+});
+
 </script>
 
 <style scoped>
@@ -501,7 +617,7 @@ function switchTab() {
   gap: 12px;
   overflow-y: auto;
   padding-right: 6px; /* щоб скролбар не перекривав контент */
-  max-height: 140px;  /* або скільки треба */
+  max-height: 140px; /* або скільки треба */
 }
 
 /* Уніфікований стиль скроллбару */
