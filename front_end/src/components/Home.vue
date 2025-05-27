@@ -16,7 +16,7 @@
           </button>
 
           <div v-if="showAccountMenu" class="account-menu">
-            <button class="logout-button">
+            <button class="logout-button" @click="logoutUser">
               <img src="../assets/icons/logout.svg" alt="logout icon" class="logout-icon"/>
               Log Out
             </button>
@@ -88,8 +88,11 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted} from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const newsItems = ref([]);
 const currentIndex = ref(0);
@@ -130,6 +133,26 @@ const showAccountMenu = ref(false);
 function toggleAccountMenu() {
   showAccountMenu.value = !showAccountMenu.value;
 }
+
+async function logoutUser() {
+  const refresh = localStorage.getItem('user-refresh');
+  try {
+    await axios.post('http://0.0.0.0:8000/api/logout/', { refresh }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('user-token')}`
+      }
+    });
+  } catch (err) {
+    console.error('Logout error:', err); // не фейлим спеціально — навіть якщо refresh вже не дійсний
+  }
+
+  // Очищаємо токени
+  localStorage.removeItem('user-token');
+  localStorage.removeItem('user-refresh');
+
+  router.push('/login');
+}
 </script>
+
 
 <style src="../assets/home.css"></style>

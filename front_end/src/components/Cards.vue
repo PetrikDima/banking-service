@@ -481,9 +481,11 @@ onMounted(async () => {
 
 .meta-boxes {
   display: flex;
-  justify-content: space-between; /* розміщення по краях */
+  justify-content: space-between;
   align-items: center;
   padding-top: 40px;
+  margin-top: 1rem;
+  gap: 1rem;
   width: 100%;
 }
 
@@ -515,13 +517,6 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 600;
   margin-top: 4px;
-}
-
-
-.meta-boxes {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
 }
 
 /* Categories */
