@@ -80,6 +80,7 @@ class MonobankPersonalInfoFromToListView(APIView):
 
             if request.query_params.get("category"):
                 data = Categorizer.categorize(data)
+
             return Response(data)
 
         except requests.exceptions.RequestException as e:

@@ -97,12 +97,12 @@
         <div class="meta-boxes">
           <div class="meta">
             <img src="../assets/icons/categories.svg" alt="categories"/>
-            <div class="meta-number">{{ activeTab === 'costs' ? 6 : 4 }}</div>
+            <div class="meta-number">{{ activeTab === 'costs' ? Object.keys(categoriesMap).length : Object.keys(categoriesMap).length }}</div>
             <div class="meta-label">Categories</div>
           </div>
           <div class="meta">
             <img src="../assets/icons/hashtag.svg" alt="tags"/>
-            <div class="meta-number">{{ activeTab === 'costs' ? 3 : 2 }}</div>
+            <div class="meta-number">0</div>
             <div class="meta-label">Tags</div>
           </div>
         </div>
@@ -112,13 +112,10 @@
       <div class="categories-box">
         <h3>Categories</h3>
         <div class="categories-list">
-          <div
-              v-for="[name, value] in Object.entries(categoriesMap)"
-              :key="name"
-              class="categoria"
-          >
-            <p>{{ name }}</p>
-            <p>{{ Math.abs(value / 100).toFixed(2) }}₴</p>
+          <div v-if="Object.keys(categoriesMap).length">
+            <div style="margin-bottom: 10px" v-for="(amount, category) in categoriesMap" :key="category">
+              <span>{{ category }}: {{ amount }} грн</span>
+            </div>
           </div>
         </div>
       </div>
@@ -127,12 +124,7 @@
       <div class="tags-box">
         <h3>Tags</h3>
         <div class="tags-list">
-          <div
-              v-for="[tag, value] in Object.entries(tagsMap)"
-              :key="tag"
-          >
-            #{{ tag }} — {{ Math.abs(value / 100).toFixed(2) }}₴
-          </div>
+          <div>No tags</div>
         </div>
       </div>
     </div>
@@ -149,7 +141,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, computed, watch} from 'vue';
 import iconCosts from '../assets/icons/costs.svg';
 import iconIncome from '../assets/icons/income.svg';
 import axios from "axios";
@@ -161,8 +153,7 @@ const cardHolder = ref('');
 const cardIban = ref('');
 const cardCosts = ref('');
 const cardIncome = ref('');
-const categoriesMap = ref({});
-const tagsMap = ref({});
+const rawCategoriesMap = ref({});
 
 function toggleAccountMenu() {
   showAccountMenu.value = !showAccountMenu.value;
@@ -171,6 +162,27 @@ function toggleAccountMenu() {
 function switchTab() {
   activeTab.value = activeTab.value === 'costs' ? 'income' : 'costs';
 }
+
+const categoriesMap = computed(() => {
+  const result = {};
+  if (!rawCategoriesMap.value || typeof rawCategoriesMap.value !== 'object') return result;
+
+  for (const category in rawCategoriesMap.value) {
+    const transactions = rawCategoriesMap.value[category];
+    const total = transactions.reduce((sum, tx) => {
+      const amount = tx.operationAmount;
+      return sum + (tx.hold ? 0 : amount);
+    }, 0);
+
+    if (activeTab.value === 'costs' && total < 0) {
+      result[category] = (total / 100).toFixed(2);
+    } else if (activeTab.value === 'income' && total > 0) {
+      result[category] = (total / 100).toFixed(2);
+    }
+  }
+  return result;
+});
+
 
 onMounted(async () => {
   try {
@@ -184,7 +196,6 @@ onMounted(async () => {
           },
         }
     );
-    console.log("Token:", response.data);
 
     const response2 = await axios.get(
         "http://0.0.0.0:8001/api/v1/monobank/personal-info/",
@@ -194,7 +205,6 @@ onMounted(async () => {
           },
         }
     );
-    console.log("Personal Info:", response2.data);
 
     const accounts = response2.data.accounts;
     const accountWithMoney = accounts.find(
@@ -224,60 +234,46 @@ onMounted(async () => {
       const accountId = accountWithMoney.id;
 
       const statementResponse = await axios.get(
-          `http://0.0.0.0:8001/api/v1/monobank/statement/${accountId}/${dateFrom}/${dateTo}/`,
+          `http://0.0.0.0:8001/api/v1/monobank/statement/${accountId}/${dateFrom}/${dateTo}/?category=true`,
           {
             headers: {
               Authorization: `JWT_TOKEN ${token}`,
             },
           }
       );
-      console.log("Statement:", statementResponse.data);
+
+      const data = statementResponse.data;
+      rawCategoriesMap.value = data;
+
+      // Підрахунок загальних витрат і надходжень
       let totalPositive = 0;
       let totalNegative = 0;
 
-      statementResponse.data.forEach(transaction => {
-        if (!transaction.hold) {
+      for (const key in data) {
+        const transactions = data[key];
+
+        transactions.forEach(transaction => {
           const amount = transaction.operationAmount;
-          if (amount > 0) {
-            totalPositive += amount;
-          } else {
-            totalNegative += amount;
-          }
-
-          const category = transaction.category || 'Uncategorized';
-          const tags = transaction.tags || [];
-
-          if (amount < 0) {
-            // Категорії
-            if (!categoriesMap.value[category]) {
-              categoriesMap.value[category] = 0;
+          if (!transaction.hold) {
+            if (amount > 0) {
+              totalPositive += amount;
+            } else {
+              totalNegative += amount;
             }
-            categoriesMap.value[category] += amount;
-
-            // Теги
-            tags.forEach(tag => {
-              if (!tagsMap.value[tag]) {
-                tagsMap.value[tag] = 0;
-              }
-              tagsMap.value[tag] += amount;
-            });
           }
-        }
-      });
+        });
+      }
 
-
-      console.log("Надходження:", (totalPositive / 100).toFixed(2), "грн");
-      console.log("Витрати:", (totalNegative / 100).toFixed(2), "грн");
-      cardCosts.value = (totalNegative / 100).toFixed(2)
-      cardIncome.value = (totalPositive / 100).toFixed(2)
+      cardCosts.value = (totalNegative / 100).toFixed(2);
+      cardIncome.value = (totalPositive / 100).toFixed(2);
     }
 
   } catch (error) {
     console.error('Помилка при завантаженні даних з monobank:', error);
   }
 });
-
 </script>
+
 
 <style scoped>
 .layout-wrapper {
