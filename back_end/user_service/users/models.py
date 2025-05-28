@@ -32,3 +32,4 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True
     )
+    monobank_token = models.CharField(max_length=255, default="")
