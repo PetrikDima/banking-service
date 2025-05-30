@@ -132,25 +132,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DEBUG_DB = (bool(int(os.getenv("DEBUG_DB", 0))))
 
-# if DEBUG_DB:
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+if DEBUG_DB:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
-# else:
-#     tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': tmpPostgres.path.replace('/', ''),
-#             'USER': tmpPostgres.username,
-#             'PASSWORD': tmpPostgres.password,
-#             'HOST': tmpPostgres.hostname,
-#             'PORT': 5432,
-#         }
-#     }
+else:
+    tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': tmpPostgres.path.replace('/', ''),
+            'USER': tmpPostgres.username,
+            'PASSWORD': tmpPostgres.password,
+            'HOST': tmpPostgres.hostname,
+            'PORT': 5432,
+        }
+    }
 
 
 REST_FRAMEWORK = {

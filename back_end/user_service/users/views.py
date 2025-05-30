@@ -19,6 +19,18 @@ class CustomTokenView(TokenObtainPairView):
     serializer_class = CustomTokenSerializer
 
 
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        })
+
+
 class UserMonobankTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
