@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://0.0.0.0:8001/api/v1';
+const API_URL = 'http://0.0.0.0:8002/api/v1';
 
 export const auth = {
 

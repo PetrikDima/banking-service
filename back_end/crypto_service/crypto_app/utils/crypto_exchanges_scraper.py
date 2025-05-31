@@ -1,5 +1,6 @@
 import time
 from abc import abstractmethod
+from datetime import datetime
 from pprint import pprint
 
 import aiohttp
@@ -149,6 +150,32 @@ class CryptoPriceFetcher:
 
         return result
 
+    async def fetch_monthly_prices(self, crypto_id_map: dict[str, str]) -> dict:
+        async with aiohttp.ClientSession() as session:
+            result = {}
+
+            for symbol, cg_id in crypto_id_map.items():
+                url = f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart"
+                params = {
+                    "vs_currency": "usd",
+                    "days": 30,
+                    "interval": "daily"
+                }
+                try:
+                    async with session.get(url, params=params) as response:
+                        data = await response.json()
+                        daily_prices = []
+                        for entry in data.get("prices", []):
+                            timestamp, price = entry
+                            date = datetime.utcfromtimestamp(timestamp / 1000).strftime('%Y-%m-%d')
+                            daily_prices.append({"date": date, "price": round(price, 2)})
+
+                        result[symbol] = daily_prices
+                except Exception as e:
+                    print(f"Error fetching monthly price for {symbol}: {e}")
+
+            return result
+
 
 if __name__ == "__main__":
     time_before_start = time.time()
@@ -156,4 +183,14 @@ if __name__ == "__main__":
     fetcher = CryptoPriceFetcher()
     b = loop.run_until_complete(fetcher.get_top_5_cryptos_with_prices())
     pprint(b)
+    coingecko_ids = {
+        "BTC": "bitcoin",
+        "ETH": "ethereum",
+        "SOL": "solana",
+        "BNB": "binancecoin",
+        "XRP": "ripple"
+    }
+
+    monthly_data = asyncio.run(fetcher.fetch_monthly_prices(coingecko_ids))
+    pprint(monthly_data)
     print(time.time() - time_before_start)
