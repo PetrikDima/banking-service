@@ -14,7 +14,7 @@
             <img src="../assets/icons/accout_icon.svg" alt="account"/>
           </button>
           <div v-if="showAccountMenu" class="account-menu">
-            <button class="logout-button">
+            <button class="logout-button" @click="logoutUser">
               <img src="../assets/icons/logout.svg" alt="logout icon" class="logout-icon"/>
               Log Out
             </button>
@@ -57,18 +57,33 @@
       </div>
 
       <div class="subscriptions-box">
-        <div class="subscription-item">
-          <img src="../assets/icons/spotify_icon.svg" alt="Spotify"/>
-          <span>Spotify</span>
-          <span class="price">2.99$</span>
+        <div
+            class="subscription-item"
+            v-for="(item, index) in subscriptions"
+            :key="index"
+        >
+          <span class="dollar-icon">$</span>
+          <span>{{ item.title }}</span>
+          <span class="price">{{ item.payment_sum }}$</span>
         </div>
-        <div class="subscription-item">
-          <img src="../assets/icons/netflix_icon.svg" alt="Netflix"/>
-          <span>Netflix</span>
-          <span class="price">2.99$</span>
+
+        <!-- Кнопка для відкриття форми -->
+        <button class="add-subscription-button" @click="toggleForm">
+          <span class="plus-icon">+</span>
+        </button>
+
+        <!-- Форма додавання -->
+        <div v-if="showForm" class="add-subscription-form">
+          <input type="text" v-model="newSubscription.title" placeholder="Назва підписки"/>
+          <input type="text" v-model="newSubscription.description" placeholder="Опис"/>
+          <input type="number" v-model="newSubscription.payment_sum" placeholder="Сума" step="0.01"/>
+          <button @click="submitSubscription">Додати</button>
         </div>
+
         <hr/>
-        <div class="total-cost">Total cost: <strong>5.98$</strong></div>
+        <div class="total-cost">
+          Total cost: <strong>{{ totalCost }}$</strong>
+        </div>
       </div>
 
       <!-- Analytics Title -->
@@ -97,12 +112,14 @@
         <div class="meta-boxes">
           <div class="meta">
             <img src="../assets/icons/categories.svg" alt="categories"/>
-            <div class="meta-number">{{ activeTab === 'costs' ? 6 : 4 }}</div>
+            <div class="meta-number">
+              {{ activeTab === 'costs' ? Object.keys(categoriesMap).length : Object.keys(categoriesMap).length }}
+            </div>
             <div class="meta-label">Categories</div>
           </div>
           <div class="meta">
             <img src="../assets/icons/hashtag.svg" alt="tags"/>
-            <div class="meta-number">{{ activeTab === 'costs' ? 3 : 2 }}</div>
+            <div class="meta-number">0</div>
             <div class="meta-label">Tags</div>
           </div>
         </div>
@@ -112,13 +129,10 @@
       <div class="categories-box">
         <h3>Categories</h3>
         <div class="categories-list">
-          <div
-              v-for="[name, value] in Object.entries(categoriesMap)"
-              :key="name"
-              class="categoria"
-          >
-            <p>{{ name }}</p>
-            <p>{{ Math.abs(value / 100).toFixed(2) }}₴</p>
+          <div v-if="Object.keys(categoriesMap).length">
+            <div style="margin-bottom: 10px" v-for="(amount, category) in categoriesMap" :key="category">
+              <span>{{ category }}: {{ amount }} грн</span>
+            </div>
           </div>
         </div>
       </div>
@@ -127,12 +141,7 @@
       <div class="tags-box">
         <h3>Tags</h3>
         <div class="tags-list">
-          <div
-              v-for="[tag, value] in Object.entries(tagsMap)"
-              :key="tag"
-          >
-            #{{ tag }} — {{ Math.abs(value / 100).toFixed(2) }}₴
-          </div>
+          <div>No tags</div>
         </div>
       </div>
     </div>
@@ -149,135 +158,224 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
-import iconCosts from '../assets/icons/costs.svg';
-import iconIncome from '../assets/icons/income.svg';
-import axios from "axios";
+import {onMounted, ref, computed} from 'vue'
+import iconCosts from '../assets/icons/costs.svg'
+import iconIncome from '../assets/icons/income.svg'
+import axios from 'axios'
+import { useRouter } from 'vue-router';
 
-const showAccountMenu = ref(false);
-const activeTab = ref('costs');
-const cardNumber = ref('');
-const cardHolder = ref('');
-const cardIban = ref('');
-const cardCosts = ref('');
-const cardIncome = ref('');
-const categoriesMap = ref({});
-const tagsMap = ref({});
+const router = useRouter();
+
+const showAccountMenu = ref(false)
+const activeTab = ref('costs')
+const cardNumber = ref('')
+const cardHolder = ref('')
+const cardIban = ref('')
+const cardCosts = ref('')
+const cardIncome = ref('')
+const rawCategoriesMap = ref({})
 
 function toggleAccountMenu() {
-  showAccountMenu.value = !showAccountMenu.value;
+  showAccountMenu.value = !showAccountMenu.value
 }
 
 function switchTab() {
-  activeTab.value = activeTab.value === 'costs' ? 'income' : 'costs';
+  activeTab.value = activeTab.value === 'costs' ? 'income' : 'costs'
 }
+
+const categoriesMap = computed(() => {
+  const result = {}
+  if (!rawCategoriesMap.value || typeof rawCategoriesMap.value !== 'object') return result
+
+  for (const category in rawCategoriesMap.value) {
+    const transactions = rawCategoriesMap.value[category]
+    const total = transactions.reduce((sum, tx) => {
+      const amount = tx.operationAmount
+      return sum + (tx.hold ? 0 : amount)
+    }, 0)
+
+    if (activeTab.value === 'costs' && total < 0) {
+      result[category] = (total / 100).toFixed(2)
+    } else if (activeTab.value === 'income' && total > 0) {
+      result[category] = (total / 100).toFixed(2)
+    }
+  }
+  return result
+})
 
 onMounted(async () => {
   try {
-    const token = localStorage.getItem("user-token");
+    const token = localStorage.getItem("user-token")
 
-    const response = await axios.get(
-        "http://0.0.0.0:8001/api/v1/monobank/token/",
-        {
-          headers: {
-            Authorization: `JWT_TOKEN ${token}`,
-          },
-        }
-    );
-    console.log("Token:", response.data);
+    const response = await axios.get("http://0.0.0.0:8001/api/v1/monobank/token/", {
+      headers: {Authorization: `JWT_TOKEN ${token}`},
+    })
 
-    const response2 = await axios.get(
-        "http://0.0.0.0:8001/api/v1/monobank/personal-info/",
-        {
-          headers: {
-            Authorization: `JWT_TOKEN ${token}`,
-          },
-        }
-    );
-    console.log("Personal Info:", response2.data);
+    const response2 = await axios.get("http://0.0.0.0:8001/api/v1/monobank/personal-info/", {
+      headers: {Authorization: `JWT_TOKEN ${token}`},
+    })
 
-    const accounts = response2.data.accounts;
-    const accountWithMoney = accounts.find(
-        acc => typeof acc.balance === 'number' && acc.balance > 0
-    );
+    const accounts = response2.data.accounts
+    const accountWithMoney = accounts.find(acc => typeof acc.balance === 'number' && acc.balance > 0)
 
     if (accountWithMoney) {
-      cardNumber.value = accountWithMoney.maskedPan?.[0] || '**** **** **** ****';
-      cardHolder.value = response2.data.name || 'Unknown';
-      cardIban.value = accountWithMoney.iban || '**** **** **** ****';
+      cardNumber.value = accountWithMoney.maskedPan?.[0] || '**** **** **** ****'
+      cardHolder.value = response2.data.name || 'Unknown'
+      cardIban.value = accountWithMoney.iban || '**** **** **** ****'
 
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
-
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const today = new Date()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(today.getDate() + 1)
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
 
       const formatDate = (date) => {
-        const dd = String(date.getDate()).padStart(2, '0');
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const yyyy = date.getFullYear();
-        return `${dd}-${mm}-${yyyy}`;
-      };
+        const dd = String(date.getDate()).padStart(2, '0')
+        const mm = String(date.getMonth() + 1).padStart(2, '0')
+        const yyyy = date.getFullYear()
+        return `${dd}-${mm}-${yyyy}`
+      }
 
-      const dateFrom = formatDate(firstDay);
-      const dateTo = formatDate(tomorrow);
-      const accountId = accountWithMoney.id;
+      const dateFrom = formatDate(firstDay)
+      const dateTo = formatDate(tomorrow)
+      const accountId = accountWithMoney.id
 
       const statementResponse = await axios.get(
-          `http://0.0.0.0:8001/api/v1/monobank/statement/${accountId}/${dateFrom}/${dateTo}/`,
+          `http://0.0.0.0:8001/api/v1/monobank/statement/${accountId}/${dateFrom}/${dateTo}/?category=true`,
           {
             headers: {
               Authorization: `JWT_TOKEN ${token}`,
             },
           }
-      );
-      console.log("Statement:", statementResponse.data);
-      let totalPositive = 0;
-      let totalNegative = 0;
+      )
 
-      statementResponse.data.forEach(transaction => {
-        if (!transaction.hold) {
-          const amount = transaction.operationAmount;
-          if (amount > 0) {
-            totalPositive += amount;
-          } else {
-            totalNegative += amount;
-          }
+      const data = statementResponse.data
+      rawCategoriesMap.value = data
 
-          const category = transaction.category || 'Uncategorized';
-          const tags = transaction.tags || [];
+      let totalPositive = 0
+      let totalNegative = 0
 
-          if (amount < 0) {
-            // Категорії
-            if (!categoriesMap.value[category]) {
-              categoriesMap.value[category] = 0;
+      for (const key in data) {
+        const transactions = data[key]
+
+        transactions.forEach(transaction => {
+          const amount = transaction.operationAmount
+          if (!transaction.hold) {
+            if (amount > 0) {
+              totalPositive += amount
+            } else {
+              totalNegative += amount
             }
-            categoriesMap.value[category] += amount;
-
-            // Теги
-            tags.forEach(tag => {
-              if (!tagsMap.value[tag]) {
-                tagsMap.value[tag] = 0;
-              }
-              tagsMap.value[tag] += amount;
-            });
           }
-        }
-      });
+        })
+      }
 
-
-      console.log("Надходження:", (totalPositive / 100).toFixed(2), "грн");
-      console.log("Витрати:", (totalNegative / 100).toFixed(2), "грн");
       cardCosts.value = (totalNegative / 100).toFixed(2)
       cardIncome.value = (totalPositive / 100).toFixed(2)
     }
 
   } catch (error) {
-    console.error('Помилка при завантаженні даних з monobank:', error);
+    console.error('Помилка при завантаженні даних з monobank:', error)
   }
-});
 
+  await fetchSubscriptions()
+})
+
+/* ---------------------------- Підписки --------------------------------- */
+
+const subscriptions = ref([])
+const showForm = ref(false)
+const newSubscription = ref({
+  title: '',
+  description: '',
+  payment_sum: ''
+})
+
+const totalCost = computed(() =>
+    subscriptions.value.reduce((sum, sub) => sum + parseFloat(sub.payment_sum), 0).toFixed(2)
+)
+
+function toggleForm() {
+  showForm.value = !showForm.value
+}
+
+async function fetchSubscriptions() {
+  try {
+    const token = localStorage.getItem("user-token")
+    console.log('token')
+    console.log(token)
+    const userResponse = await axios.get(
+        "http://0.0.0.0:8001/api/v1/me",
+        {
+          headers: {
+            Authorization: `JWT_TOKEN ${token}`,
+          },
+        }
+    )
+
+    const userId = userResponse.data.id
+    console.log(userId)
+    const response = await axios.get(`http://0.0.0.0:8001/api/v1/subscriptions/?user=${userId}`, {
+      headers: {
+        Authorization: `JWT_TOKEN ${token}`,
+      },
+    })
+    subscriptions.value = response.data
+    console.log('response.data')
+    console.log(response.data)
+  } catch (error) {
+    console.error('Помилка при завантаженні підписок:', error)
+  }
+}
+
+async function submitSubscription() {
+  const token = localStorage.getItem("user-token")
+
+  try {
+    const response = await axios.post(
+        "http://0.0.0.0:8001/api/v1/subscriptions/",
+        {
+          title: newSubscription.value.title,
+          description: newSubscription.value.description,
+          payment_sum: newSubscription.value.payment_sum
+        },
+        {
+          headers: {
+            Authorization: `JWT_TOKEN ${token}`
+          }
+        }
+    )
+
+    subscriptions.value.push(response.data)
+    newSubscription.value = {
+      title: '',
+      description: '',
+      payment_sum: ''
+    }
+    showForm.value = false
+  } catch (error) {
+    console.error('Помилка при додаванні підписки:', error)
+  }
+}
+
+async function logoutUser() {
+  const refresh = localStorage.getItem('user-refresh');
+  try {
+    await axios.post('http://0.0.0.0:8000/api/logout/', { refresh }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('user-token')}`
+      }
+    });
+  } catch (err) {
+    console.error('Logout error:', err);
+  }
+
+  localStorage.removeItem('user-token');
+  localStorage.removeItem('user-refresh');
+
+  router.push('/login');
+}
 </script>
+
 
 <style scoped>
 .layout-wrapper {
@@ -384,6 +482,79 @@ onMounted(async () => {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
+.add-subscription-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  margin-left: 298px;
+  align-items: center;
+  justify-content: center;
+}
+
+.plus-icon {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4CAF50;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  border-radius: 50%;
+  background-color: #e0f7e9;
+}
+
+.add-subscription-form {
+  background-color: #6fae6e;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.15);
+  width: 100%; /* по ширині контейнера */
+  box-sizing: border-box;
+}
+
+.add-subscription-form input {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1b4332;
+  background-color: #dcedc8;
+  outline: none;
+  flex-grow: 1; /* інпути розтягуються пропорційно */
+  min-width: 0; /* щоб flex-grow працював коректно */
+  transition: background-color 0.2s ease;
+}
+
+.add-subscription-form input::placeholder {
+  color: #4caf50;
+}
+
+.add-subscription-form input:focus {
+  background-color: #c5e1a5;
+}
+
+.add-subscription-form button {
+  padding: 6px 14px;
+  background-color: #4caf50;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  flex-shrink: 0; /* кнопка не стискається */
+  margin-left: 8px;
+  white-space: nowrap; /* щоб текст не переносився */
+}
+
+
 .subscription-item {
   display: flex;
   justify-content: space-between;
@@ -391,8 +562,15 @@ onMounted(async () => {
   padding: 12px;
   border-radius: 18px;
   margin-bottom: 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
+.subscription-item .dollar-icon,
+.subscription-item .price {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
 
 .total-cost {
   margin-top: 10px;
@@ -457,8 +635,8 @@ onMounted(async () => {
   font-weight: 800;
   color: #072b16;
   text-align: center;
-  margin-top: 50px; /* 🟢 відступ вниз — регулюй вручну */
-  margin-bottom: 40px; /* 🟢 відступ до meta-boxes */
+  margin-top: 50px;
+  margin-bottom: 40px;
 }
 
 .arrow {
@@ -564,7 +742,6 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-content: center;
-
 }
 
 /* Tags */
@@ -611,8 +788,8 @@ onMounted(async () => {
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-  padding-right: 6px; /* щоб скролбар не перекривав контент */
-  max-height: 140px; /* або скільки треба */
+  padding-right: 6px;
+  max-height: 140px;
 }
 
 /* Уніфікований стиль скроллбару */
