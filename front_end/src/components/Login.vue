@@ -56,7 +56,7 @@ export default {
       try {
         const data = await auth.login(this.username, this.password);
         localStorage.setItem('user-token', data.access);
-        this.$router.push('/dashboard');
+        this.$router.push('/home');
       } catch (err) {
         this.errorMessage = '';
       }
