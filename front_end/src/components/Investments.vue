@@ -26,37 +26,76 @@
       <section>
         <h2 style="text-align: center">Cryptocurrency</h2>
         <div class="grid">
-          <Item name="Bitcoin" :img="bitcoinIcon" />
-          <Item name="Ethereum" :img="ethereumIcon" />
-          <Item name="BNB" :img="bnbIcon" />
-          <Item name="Solana" :img="solanaIcon" />
-          <Item name="XRP" :img="xrpIcon" />
+          <Item
+            name="Bitcoin"
+            trading_key="BTC"
+            :img="bitcoinIcon"
+            @select="handleCryptoSelect"
+            :isSelected="selectedCrypto === 'BTC'"
+          />
+          <Item
+            name="Ethereum"
+            trading_key="ETH"
+            :img="ethereumIcon"
+            @select="handleCryptoSelect"
+            :isSelected="selectedCrypto === 'ETH'"
+          />
+          <Item
+            name="BNB"
+            trading_key="BNB"
+            :img="bnbIcon"
+            @select="handleCryptoSelect"
+            :isSelected="selectedCrypto === 'BNB'"
+          />
+          <Item
+            name="Solana"
+            trading_key="SOL"
+            :img="solanaIcon"
+            @select="handleCryptoSelect"
+            :isSelected="selectedCrypto === 'SOL'"
+          />
+          <Item
+            name="XRP"
+            trading_key="XRP"
+            :img="xrpIcon"
+            @select="handleCryptoSelect"
+            :isSelected="selectedCrypto === 'XRP'"
+          />
         </div>
 
-        <h2 style="text-align: center">Analysis</h2>
-        <div class="chart-section">
-          <h2>Solana (SOL) Price Chart</h2>
-
-          <div class="chart-and-markets">
-            <div class="chart-container">
-              <LineChart :data="solanaPrices" label="SOL" />
-              <div class="chart-description">
-                <p>
-                  Solana has shown a steady recovery throughout May 2025, with notable growth around the middle of the month.
-                  Despite some short-term pullbacks, the trend remains optimistic due to increased developer activity and growing DeFi adoption on the network.
+        <div v-if="selectedCrypto">
+          <h2 style="text-align: center">Analysis</h2>
+          <div class="chart-section">
+            <div v-if="isLoading" class="spinner-overlay">
+              <div class="spinner-wrapper">
+                <div class="spinner"></div>
+                <p class="spinner-text">
+                  Loading data<span class="dots"><span>.</span><span>.</span><span>.</span></span>
                 </p>
               </div>
             </div>
 
-            <div class="market-prices">
-              <h3>Exchange Prices</h3>
-              <ul>
-                <li v-for="(exchange, name) in exchangePrices" :key="name">
-                  <span class="exchange-name">{{ name }}</span>
-                  <span class="exchange-price">${{ exchange.price.toFixed(2) }}</span>
-                  <a :href="exchange.trade_link" target="_blank" class="trade-button">Trade</a>
-                </li>
-              </ul>
+            <div class="chart-and-markets" :style="{ opacity: isLoading ? 0.3 : 1, pointerEvents: isLoading ? 'none' : 'auto' }">
+              <div class="chart-container">
+                <LineChart :data="crypto_prices" :label="selectedCrypto" />
+                <div class="chart-description">
+                  <p>
+                    Solana has shown a steady recovery throughout May 2025, with notable growth around the middle of the month.
+                    Despite some short-term pullbacks, the trend remains optimistic due to increased developer activity and growing DeFi adoption on the network.
+                  </p>
+                </div>
+              </div>
+
+              <div class="market-prices">
+                <h3>Trading</h3>
+                <ul>
+                  <li v-for="(exchange, name) in exchangePrices" :key="name">
+                    <span class="exchange-name">{{ name }}</span>
+                    <span class="exchange-price">${{ exchange.price.toFixed(2) }}</span>
+                    <a :href="exchange.trade_link" target="_blank" class="trade-button">Trade</a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -83,6 +122,12 @@ import ethereumIcon from '../assets/icons/ethereum_icon.svg'
 import bnbIcon from '../assets/icons/bnb_icon.svg'
 import solanaIcon from '../assets/icons/solana_icon.svg'
 import xrpIcon from '../assets/icons/xrp_icon.svg'
+import { investments } from "@/scripts/investments.js"
+
+const exchangePrices = ref({})
+const selectedCrypto = ref('')
+const crypto_prices = ref([])
+const isLoading = ref(false)
 
 const showAccountMenu = ref(false)
 
@@ -94,60 +139,26 @@ function logoutUser() {
   console.log('Logging out...')
 }
 
-const solanaPrices = [
-  { date: '2025-05-02', price: 150.76 },
-  { date: '2025-05-03', price: 147.97 },
-  { date: '2025-05-04', price: 146.8 },
-  { date: '2025-05-05', price: 143.98 },
-  { date: '2025-05-06', price: 146.81 },
-  { date: '2025-05-07', price: 146.91 },
-  { date: '2025-05-08', price: 147.2 },
-  { date: '2025-05-09', price: 163.42 },
-  { date: '2025-05-10', price: 172.7 },
-  { date: '2025-05-11', price: 177.34 },
-  { date: '2025-05-12', price: 172.86 },
-  { date: '2025-05-13', price: 174.42 },
-  { date: '2025-05-14', price: 184.05 },
-  { date: '2025-05-15', price: 176.46 },
-  { date: '2025-05-16', price: 168.75 },
-  { date: '2025-05-17', price: 167.77 },
-  { date: '2025-05-18', price: 165.94 },
-  { date: '2025-05-19', price: 171.54 },
-  { date: '2025-05-20', price: 166.71 },
-  { date: '2025-05-21', price: 168.39 },
-  { date: '2025-05-22', price: 173.97 },
-  { date: '2025-05-23', price: 179.58 },
-  { date: '2025-05-24', price: 174.44 },
-  { date: '2025-05-25', price: 176.0 },
-  { date: '2025-05-26', price: 175.13 },
-  { date: '2025-05-27', price: 174.72 },
-  { date: '2025-05-28', price: 176.58 },
-  { date: '2025-05-29', price: 172.12 },
-  { date: '2025-05-30', price: 166.84 },
-  { date: '2025-05-31', price: 155.2 },
-]
+async function handleCryptoSelect(symbol) {
+  if (selectedCrypto.value === symbol) {
+    selectedCrypto.value = ''
+    return
+  }
 
-const exchangePrices = {
-  Binance: {
-    price: 154.58,
-    trade_link: 'https://www.binance.com/en/trade/SOLUSDT',
-  },
-  Bitget: {
-    price: 154.56,
-    trade_link: 'https://www.bitget.com/en/spot/SOLUSDT',
-  },
-  Bybit: {
-    price: 154.59,
-    trade_link: 'https://www.bybit.com/en/trade/spot/SOLUSDT',
-  },
-  KuCoin: {
-    price: 154.604,
-    trade_link: 'https://www.kucoin.com/trade/SOL-USDT',
-  },
-  OKX: {
-    price: 154.58,
-    trade_link: 'https://www.okx.com/trade-spot/SOL-USDT',
-  },
+  isLoading.value = true
+  selectedCrypto.value = symbol
+
+  try {
+    const result = await investments.getTradingByName(symbol)
+    exchangePrices.value = result || {}
+
+    const result1 = await investments.getPriceByName(symbol)
+    crypto_prices.value = Array.isArray(result1) ? result1 : []
+  } catch (error) {
+    console.error('Error loading crypto data:', error)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -212,6 +223,7 @@ const exchangePrices = {
   margin: 3rem auto;
   padding: 1rem;
   text-align: center;
+  position: relative;
 }
 
 .chart-and-markets {
@@ -241,12 +253,12 @@ const exchangePrices = {
 
 .market-prices {
   flex: 0 0 220px;
-  background-color: #ffffff; /* ← повністю непрозорий білий */
+  background-color: #ffffff;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   font-size: 0.95rem;
-  z-index: 1; /* на всяк випадок */
+  z-index: 1;
 }
 
 .market-prices h3 {
@@ -291,5 +303,76 @@ const exchangePrices = {
 
 .trade-button:hover {
   background-color: #047857;
+}
+
+/* Spinner styles */
+.spinner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.spinner-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.spinner {
+  border: 4px solid #d1fae5;
+  border-top: 4px solid #065f46;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-text {
+  font-size: 1rem;
+  color: #065f46;
+  font-weight: 500;
+  text-align: center;
+}
+
+.dots span {
+  opacity: 0;
+  animation: dotsAnimation 1.5s infinite;
+  display: inline-block;
+}
+
+.dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dotsAnimation {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 </style>

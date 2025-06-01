@@ -14,12 +14,26 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include
+from django.contrib import admin
+from django.urls import include, path
+from drf_yasg import openapi, views
+from rest_framework import permissions
 
-from rest_framework.routers import DefaultRouter
-
-router = DefaultRouter()
+schema_view = views.get_schema_view(
+   openapi.Info(
+      title="Crypto Service API",
+      default_version="v1",
+      description="API documentation for Crypto service",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="petrikdima16@gmail.com"),
+      license=openapi.License(name="MIT License"),
+   ),
+   public=True,
+   permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('api/v1/', include('crypto_app.urls'), name='crypto_app'),
+    path('api/v1/crypto_service/swagger/', schema_view.with_ui('swagger'), name='swagger')
 ]
