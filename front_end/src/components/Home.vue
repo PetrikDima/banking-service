@@ -9,7 +9,6 @@
         <a href="/investments">Investments</a>
       </nav>
       <div class="header-buttons">
-        <button><img src="../assets/icons/messages.svg" alt="messages"></button>
         <div class="account-menu-container">
           <button @click="toggleAccountMenu">
             <img src="../assets/icons/accout_icon.svg" alt="account"/>

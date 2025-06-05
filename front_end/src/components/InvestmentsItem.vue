@@ -2,7 +2,7 @@
 <template>
   <div class="item" :class="{ selected: props.isSelected }" @click="handleClick">
     <img :src="img" :alt="name" />
-    <p>{{ name }}</p>
+    <p style="font-size: 20px">{{ name }}</p>
   </div>
 </template>
 
