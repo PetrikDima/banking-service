@@ -9,7 +9,6 @@
         <a href="/investments">Investments</a>
       </nav>
       <div class="header-buttons">
-        <button><img src="../assets/icons/messages.svg" alt="messages"></button>
         <div class="account-menu-container">
           <button @click="toggleAccountMenu">
             <img src="../assets/icons/accout_icon.svg" alt="account"/>
@@ -37,7 +36,7 @@
             integrations like Monobank for automatic transaction syncing.
           </p>
           <a href="https://github.com/PetrikDima/banking-service" target="_blank" rel="noopener noreferrer">
-            <button class="btn-primary">Read more &gt;</button>
+            <button class="btn-primary">View more &gt;</button>
           </a>
         </div>
       </div>
