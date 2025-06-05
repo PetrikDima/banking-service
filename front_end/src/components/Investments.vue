@@ -2,12 +2,11 @@
   <div class="page-wrapper">
     <header class="header">
       <nav class="nav">
-        <a href="#">Home</a>
+        <a href="/home">Home</a>
         <a href="/cards">Cards</a>
         <a href="/investments">Investments</a>
       </nav>
       <div class="header-buttons">
-        <button><img src="../assets/icons/messages.svg" alt="messages" /></button>
         <div class="account-menu-container">
           <button @click="toggleAccountMenu">
             <img src="../assets/icons/accout_icon.svg" alt="account" />
@@ -24,7 +23,7 @@
 
     <main class="content">
       <section>
-        <h2 style="text-align: center">Cryptocurrency</h2>
+        <h2 style="text-align: center; font-size: 30px">Cryptocurrency</h2>
         <div class="grid">
           <Item
             name="Bitcoin"
@@ -78,12 +77,6 @@
             <div class="chart-and-markets" :style="{ opacity: isLoading ? 0.3 : 1, pointerEvents: isLoading ? 'none' : 'auto' }">
               <div class="chart-container">
                 <LineChart :data="crypto_prices" :label="selectedCrypto" />
-                <div class="chart-description">
-                  <p>
-                    Solana has shown a steady recovery throughout May 2025, with notable growth around the middle of the month.
-                    Despite some short-term pullbacks, the trend remains optimistic due to increased developer activity and growing DeFi adoption on the network.
-                  </p>
-                </div>
               </div>
 
               <div class="market-prices">
@@ -123,6 +116,7 @@ import bnbIcon from '../assets/icons/bnb_icon.svg'
 import solanaIcon from '../assets/icons/solana_icon.svg'
 import xrpIcon from '../assets/icons/xrp_icon.svg'
 import { investments } from "@/scripts/investments.js"
+import axios from "axios";
 
 const exchangePrices = ref({})
 const selectedCrypto = ref('')
@@ -135,8 +129,22 @@ function toggleAccountMenu() {
   showAccountMenu.value = !showAccountMenu.value
 }
 
-function logoutUser() {
-  console.log('Logging out...')
+async function logoutUser() {
+  const refresh = localStorage.getItem('user-refresh');
+  try {
+    await axios.post('http://0.0.0.0:8000/api/logout/', { refresh }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('user-token')}`
+      }
+    });
+  } catch (err) {
+    console.error('Logout error:', err);
+  }
+
+  localStorage.removeItem('user-token');
+  localStorage.removeItem('user-refresh');
+
+  router.push('/login');
 }
 
 async function handleCryptoSelect(symbol) {
@@ -163,11 +171,22 @@ async function handleCryptoSelect(symbol) {
 </script>
 
 <style scoped>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
 .page-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  font-family: inherit;
+}
+a {
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+h2 {
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 24px;
 }
 
 .content {
