@@ -13,7 +13,7 @@ services:
     container_name: news_service
     command: >
       sh -c "python news_service/manage.py makemigrations &&
-             python user_service/manage.py migrate && 
+             python news_service/manage.py migrate && 
              python news_service/manage.py runserver 0.0.0.0:8000"
     volumes:
       - ../:/app

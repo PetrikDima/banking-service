@@ -1,8 +1,8 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 
-router = DefaultRouter()
+from .views import Top5CryptosListView, MonthlyPricesListView
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('top_cryptos', Top5CryptosListView.as_view()),
+    path('monthly_prices', MonthlyPricesListView.as_view()),
 ]
