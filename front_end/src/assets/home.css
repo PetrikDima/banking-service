@@ -1,0 +1,392 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    color: #1f2937;
+    font-family: sans-serif;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 875px;
+    width: 100%;
+    z-index: -1;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: cover;
+    transform: scaleY(-1) rotate(180deg);
+}
+
+.container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 875px;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        linear-gradient(to bottom, #1A7431CC 0%, #1A743100 7%),
+        linear-gradient(to bottom, #ffffff00 80%, #ffffff 100%);
+}
+
+.header {
+    width: 100%;
+    height: 97px;
+    display: flex;
+    align-items: center;
+    gap: 1450px;
+    padding: 0 3rem;
+}
+
+.account-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.account-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    background: linear-gradient(230deg, #ffffff 30%, #7AAD85 100%);
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 0.5rem 1rem;
+    min-width: 140px;
+}
+
+.logout-button {
+    background: none;
+    border: none;
+    color: #000;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.logout-icon {
+    width: 20px;
+    margin-right: 8px;
+}
+
+.nav {
+    display: flex;
+    gap: 2rem;
+    font-size: 1rem;
+    align-items: center;
+}
+
+.nav a {
+    color: #081C15;
+    text-decoration: none;
+    transition: color 0.2s;
+    font-size: 20px;
+}
+
+.nav a:hover {
+    color: #059669;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.header-buttons button {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #374151;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.header-buttons button:hover {
+    color: #059669;
+}
+
+.info-section {
+    width: 100%;
+    height: 875px;
+    position: relative;
+    margin-top: 65px;
+}
+
+.money-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 875px;
+    overflow: visible;
+}
+
+.money-image-wrapper img {
+    width: 100%;
+    height: 875px;
+    transform: rotate(-180deg);
+    object-fit: cover;
+    display: block;
+}
+
+.info-about-company {
+    position: absolute;
+    top: 259px;
+    left: 36px;
+    width: 544px;
+    height: 419px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.info-text-block {
+    width: 508px;
+    padding: 1rem;
+    color: #000000;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 8px;
+}
+
+.info-text-block h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+}
+
+.info-text-block p {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+    flex-grow: 1;
+}
+
+.btn-primary {
+    background-color: #000000;
+    color: #dbfeb8;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    align-self: flex-start;
+    margin-top: 1rem;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #065f46;
+}
+
+.news-section {
+    width: 100%;
+    padding: 4rem 3rem;
+    background-color: white;
+    margin-top: -150px;
+}
+
+.news-section h2 {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 3rem;
+    color: #065f46;
+}
+
+.news-cards {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    position: relative;
+}
+
+.news-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 34px;
+    padding: 1.5rem;
+    width: 576px;
+    height: 390px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    background-color: #2d6a4f;
+    color: #dbfeb8;
+    font-size: 1.25rem;
+    position: relative;
+    transition: filter 0.3s, opacity 0.3s, transform 0.3s;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.news-card--main {
+    filter: none;
+    opacity: 1;
+    transform: scale(1);
+    z-index: 5;
+}
+
+.news-card--blurred {
+    filter: blur(3px);
+    opacity: 0.6;
+    transform: scale(0.9);
+    z-index: 1;
+}
+
+.news-card h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.news-card p {
+    font-size: 1.25rem;
+    line-height: 1.5;
+    max-width: 90%;
+}
+
+.arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    color: #dbfeb8;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.3s;
+    z-index: 10;
+    padding: 0 0.25rem;
+    width: 40px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+}
+
+.arrow:hover {
+    color: #aee2b6;
+}
+
+.arrow.left {
+    left: -50px;
+}
+
+.arrow.right {
+    right: -50px;
+}
+
+.footer {
+    flex-shrink: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(to top, #1A7431CC 0%, #1A743100 100%);
+    color: white;
+    padding: 1rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.footer p a {
+    color: #dbfeb8;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer p a:hover {
+    color: #d1fae5;
+    text-decoration: none;
+}
+
+.social-icons {
+    display: flex;
+    gap: 1rem;
+    font-size: 1.25rem;
+}
+
+.news-link {
+    color: #dbfeb8;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.news-link:hover {
+    color: #aee2b6;
+}
+
+/* Головне: body — як flex-контейнер, вся сторінка в column */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Контейнер всієї сторінки */
+.page-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Градієнт за header */
+.page-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 875px;
+  width: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(to bottom, #1A7431CC 0%, #1A743100 7%),
+    linear-gradient(to bottom, #ffffff00 80%, #ffffff 100%);
+}
+
+/* Основний контент — займає весь доступний простір */
+.content {
+  flex: 1;
+}
+
+/* Футер не зсувається вгору */
+.footer {
+  height: 60px;
+  background: linear-gradient(to top, #1A7431CC 0%, #1A743100 100%);
+  color: white;
+  padding: 1rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
