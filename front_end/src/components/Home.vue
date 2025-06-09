@@ -36,7 +36,7 @@
             integrations like Monobank for automatic transaction syncing.
           </p>
           <a href="https://github.com/PetrikDima/banking-service" target="_blank" rel="noopener noreferrer">
-            <button class="btn-primary">Read more &gt;</button>
+            <button class="btn-primary">View more &gt;</button>
           </a>
         </div>
       </div>
